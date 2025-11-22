@@ -1,6 +1,7 @@
 const sequelize = require("../common/database.js");
 const defineLink = require("../common/models/link.js");
 const Link = defineLink(sequelize);
+const { nanoid } = require("nanoid");
 
 const { validators } = require("../utils"); // or "../../utils" depending on path
 const { isSafeId } = validators;
@@ -12,7 +13,7 @@ exports.register = async (req, res) => {
     // Generate ID if none given
     const shortId = id || nanoid(6);
 
-    if (!isSafeId(id)) {
+    if (id && !isSafeId(id)) {
       return res.status(400).json({
         success: false,
         error: "Custom ID can only contain letters, numbers, - and _",
@@ -32,7 +33,6 @@ exports.register = async (req, res) => {
     if (err.name === "SequelizeUniqueConstraintError") {
       errorMsg = "Custom ID already exists. Please choose a different ID.";
       res.status(400).json({ success: false, error: errorMsg, name: err.name });
-    }
-    res.status(500).json({ success: false, error: err.message, name: err.name });
+    } else res.status(500).json({ success: false, error: err.message, name: err.name });
   }
 };
