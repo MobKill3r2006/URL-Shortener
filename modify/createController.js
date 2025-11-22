@@ -2,12 +2,23 @@ const sequelize = require("../common/database.js");
 const defineLink = require("../common/models/link.js");
 const Link = defineLink(sequelize);
 
+const { validators } = require("../utils"); // or "../../utils" depending on path
+const { isSafeId } = validators;
+
 exports.register = async (req, res) => {
   try {
     const { url, id } = req.body;
 
     // Generate ID if none given
     const shortId = id || nanoid(6);
+
+    if (!isSafeId(id)) {
+      return res.status(400).json({
+        success: false,
+        error: "Custom ID can only contain letters, numbers, - and _",
+        name: "IllegalCharacters",
+      });
+    }
 
     const link = await Link.create({
       url: url,
